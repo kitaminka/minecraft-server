@@ -1,5 +1,8 @@
 #include <iostream>
+#include "network/server.hpp"
 
 int main() {
-    std::cout << "Hello" << std::endl;
+  Server s(25565);
+
+  s.start();
 }
