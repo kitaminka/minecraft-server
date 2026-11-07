@@ -9,7 +9,7 @@ add_executable(minecraft_server)
 find_package(Threads)
 target_link_libraries(minecraft_server PRIVATE Threads::Threads)
 
-target_compile_options(minecraft_server PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(minecraft_server PRIVATE -Wall -Wextra -Wpedantic -Wold-style-cast)
 
 target_include_directories(minecraft_server
   PRIVATE
@@ -20,4 +20,5 @@ target_sources(minecraft_server
   PRIVATE
     src/main.cpp
     src/network/server.cpp
+    src/network/client.cpp
 )

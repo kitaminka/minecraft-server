@@ -1,10 +1,26 @@
+#include <exception>
 #include <iostream>
+#include <csignal>
+#include <unistd.h>
 #include "network/server.hpp"
 
-int main() {
-  Server s(25565);
+Server s(25565);
 
-  s.start();
+void signal_handler(int) {
+  s.request_stop();
+  close(STDIN_FILENO);
+}
+
+int main() {
+  signal(SIGINT, signal_handler);
+
+  try {
+    s.start();
+  } catch(const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    s.stop();
+    return 1;
+  }
 
   std::string command;
   while(std::cin >> command) {
@@ -13,4 +29,6 @@ int main() {
       break;
     }
   }
+
+  return 0;
 }
