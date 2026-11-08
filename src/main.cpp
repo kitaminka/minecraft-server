@@ -2,9 +2,10 @@
 #include <iostream>
 #include <csignal>
 #include <unistd.h>
-#include "network/server.hpp"
 
-Server s(25565);
+#include "network/tcp_server.hpp"
+
+TcpServer s(25565);
 
 void signal_handler(int) {
   s.request_stop();

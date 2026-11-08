@@ -4,21 +4,20 @@
 #include <netinet/in.h>
 #include <unordered_map>
 
-#include "network/client.hpp"
+#include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
 #include "io/epoll.hpp"
 
-class Server {
+class TcpServer {
   int port{0};
 
   Epoll epoll;
 
   UniqueFd socket_ufd;
-  UniqueFd wakeup_ufd;
 
   std::atomic<bool> is_running{false};
 
-  std::unordered_map<int, std::unique_ptr<Client>> clients;
+  std::unordered_map<int, std::unique_ptr<TcpConnection>> connections;
 
   sockaddr_in server_address{};
 
@@ -26,13 +25,11 @@ class Server {
 
   void epoll_loop();
   void initialize_socket();
-  void initialize_epoll();
-  void write_wakeup();
-  void accept_clients();
+  void accept_connections();
 
   public:
-    Server(int port);
-    ~Server();
+    TcpServer(int port);
+    ~TcpServer();
     void start();
     void stop();
     void request_stop();

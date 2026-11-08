@@ -6,6 +6,7 @@
 
 class Epoll {
   UniqueFd epoll_ufd;
+  UniqueFd wakeup_ufd;
 
   public:
     Epoll();
@@ -13,4 +14,5 @@ class Epoll {
     void add(const UniqueFd& ufd);
     void remove(const UniqueFd& ufd);
     int wait(epoll_event* events, int max_events, int timeout_ms = -1);
+    void wakeup();
 };

@@ -19,8 +19,8 @@ target_include_directories(minecraft_server
 target_sources(minecraft_server
   PRIVATE
     src/main.cpp
-    src/network/server.cpp
-    src/network/client.cpp
+    src/network/tcp_server.cpp
+    src/network/tcp_connection.cpp
     src/io/unique_fd.cpp
     src/io/epoll.cpp
 )
