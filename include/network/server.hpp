@@ -3,13 +3,16 @@
 #include <atomic>
 #include <netinet/in.h>
 #include <unordered_map>
+
 #include "network/client.hpp"
+#include "network/unique_fd.hpp"
 
 class Server {
   int port{0};
-  int socket_fd{-1};
-  int epoll_fd{-1};
-  int wakeup_fd{-1};
+
+  UniqueFd socket_fd;
+  UniqueFd epoll_fd;
+  UniqueFd wakeup_fd;
 
   std::atomic<bool> is_running{false};
 

@@ -2,11 +2,12 @@
 
 #include <netinet/in.h>
 
+#include "network/unique_fd.hpp"
+
 class Client {
   public:
-    int fd;
+    UniqueFd fd;
     sockaddr_in address;
 
     Client(int fd, sockaddr_in address);
-    ~Client();
 };
