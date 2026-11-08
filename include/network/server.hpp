@@ -5,14 +5,16 @@
 #include <unordered_map>
 
 #include "network/client.hpp"
-#include "network/unique_fd.hpp"
+#include "io/unique_fd.hpp"
+#include "io/epoll.hpp"
 
 class Server {
   int port{0};
 
-  UniqueFd socket_fd;
-  UniqueFd epoll_fd;
-  UniqueFd wakeup_fd;
+  Epoll epoll;
+
+  UniqueFd socket_ufd;
+  UniqueFd wakeup_ufd;
 
   std::atomic<bool> is_running{false};
 

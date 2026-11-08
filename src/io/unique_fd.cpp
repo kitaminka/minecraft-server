@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "network/unique_fd.hpp"
+#include "io/unique_fd.hpp"
 
 UniqueFd::UniqueFd() : fd(-1) {}
 
@@ -25,7 +25,7 @@ bool UniqueFd::is_active() const {
 
 UniqueFd& UniqueFd::operator=(UniqueFd&& other) noexcept{
   if (this != &other) {
-    if (fd != 1) {
+    if (is_active()) {
       close(fd);
     }
     fd = other.fd;
