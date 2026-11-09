@@ -17,4 +17,5 @@ class UniqueFd {
 
     int get_fd() const;
     bool is_active() const;
+    void reset();
 };

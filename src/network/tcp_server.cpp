@@ -42,6 +42,7 @@ void TcpServer::stop() {
   }
 
   connections.clear();
+  socket_ufd.reset();
 }
 
 void TcpServer::initialize_socket() {
@@ -85,16 +86,20 @@ void TcpServer::epoll_loop() {
         accept_connections();
       } else {
         // TcpConnection* tcp_connection = static_cast<TcpConnection*>(event.data.ptr);
-        // TODO: replace with find method
-        TcpConnection* connection = connections[event.data.fd].get();
+        auto it = connections.find(event.data.fd);
+        if (it == connections.end()) {
+          std::cout << "Client was not found: " << event.data.fd << std::endl;
+          continue;
+        }
+        TcpConnection* conn = it->second.get();
         // TODO: add handling for cases when there is no tcp_connection
         char buffer[100] = {0};
-        int len = read(connection->ufd.get_fd(), buffer, 100);
+        ssize_t len = read(conn->ufd.get_fd(), buffer, 100);
         if (len == 0) {
-          int connection_fd = connection->ufd.get_fd();
-          epoll.remove(connection->ufd);
-          connections.erase(connection_fd);
-          std::cout << "Removed tcp_connection: " << connection_fd << std::endl;
+          int conn_fd = conn->ufd.get_fd();
+          epoll.remove(conn->ufd);
+          connections.erase(conn_fd);
+          std::cout << "Removed connection: " << conn_fd << std::endl;
         } else {
           // TODO
         }
@@ -103,29 +108,24 @@ void TcpServer::epoll_loop() {
   }
 }
 
-void TcpServer::request_stop() {
-  is_running = false;
-  epoll.wakeup();
-}
-
 void TcpServer::accept_connections() {
   while(true) {
-    sockaddr_in tcp_connection_address;
-    socklen_t tcp_connection_addr_len = sizeof(tcp_connection_address);
-    int tcp_connection_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&tcp_connection_address), &tcp_connection_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    sockaddr_in conn_addr;
+    socklen_t conn_addr_len = sizeof(conn_addr);
+    int conn_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&conn_addr), &conn_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
 
-    if (tcp_connection_fd < 0) {
-      std::cout << "No more tcp_connections to add" << std::endl;
+    if (conn_fd < 0) {
+      std::cout << "No more connections to add" << std::endl;
       // TODO: add error handling
       break;
     } else {
-      connections[tcp_connection_fd] = std::make_unique<TcpConnection>(tcp_connection_fd, tcp_connection_address);
+      connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr);
 
       // TODO: add error handling
-      TcpConnection* tcp_connection = connections[tcp_connection_fd].get();
-      epoll.add(tcp_connection->ufd);
+      TcpConnection* conn = connections[conn_fd].get();
+      epoll.add(conn->ufd);
 
-      std::cout << "Added tcp_connection: " << tcp_connection->ufd.get_fd() << std::endl;
+      std::cout << "Added connection: " << conn->ufd.get_fd() << std::endl;
     }
   }
 }

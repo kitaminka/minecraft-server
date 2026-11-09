@@ -1,19 +1,26 @@
+#include <bits/types/sigset_t.h>
 #include <exception>
 #include <iostream>
 #include <csignal>
+#include <thread>
 #include <unistd.h>
 
 #include "network/tcp_server.hpp"
 
-TcpServer s(25565);
-
-void signal_handler(int) {
-  s.request_stop();
-  close(STDIN_FILENO);
+void signal_watcher(const sigset_t* sigmask, TcpServer* s) {
+  int sig;
+  sigwait(sigmask, &sig);
+  s->stop();
 }
 
 int main() {
-  signal(SIGINT, signal_handler);
+  sigset_t sigmask;
+  sigemptyset(&sigmask);
+  sigaddset(&sigmask, SIGINT);
+  sigaddset(&sigmask, SIGTERM);
+  pthread_sigmask(SIG_BLOCK, &sigmask, nullptr);
+
+  TcpServer s(25565);
 
   try {
     s.start();
@@ -23,12 +30,22 @@ int main() {
     return 1;
   }
 
-  std::string command;
-  while(std::cin >> command) {
-    if (command == "stop") {
-      s.stop();
-      break;
-    }
+  auto signal_thread = std::thread(signal_watcher, &sigmask, &s);
+
+  // std::string command;
+  // while(std::cin >> command) {
+  //   if (command == "stop") {
+  //     s.stop();
+  //     break;
+  //   }
+  // }
+  if (signal_thread.joinable()) {
+    signal_thread.join();
+  }
+
+  if (signal_thread.joinable()) {
+    pthread_kill(signal_thread.native_handle(), SIGTERM);
+    signal_thread.join();
   }
 
   return 0;
