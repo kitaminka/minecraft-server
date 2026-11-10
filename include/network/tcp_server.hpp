@@ -1,8 +1,11 @@
 #pragma once
+#include <cstdint>
 #include <thread>
 #include <atomic>
 #include <netinet/in.h>
 #include <unordered_map>
+#include <memory>
+#include <vector>
 
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
@@ -28,9 +31,8 @@ class TcpServer {
   void accept_connections();
 
   public:
-    TcpServer(int port);
+    explicit TcpServer(int port);
     ~TcpServer();
     void start();
     void stop();
-    void request_stop();
 };

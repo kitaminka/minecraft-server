@@ -5,9 +5,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cerrno>
-#include <arpa/inet.h>
 #include <sys/epoll.h>
-#include <sys/eventfd.h>
 
 #include "network/tcp_server.hpp"
 #include "network/tcp_connection.hpp"
@@ -58,8 +56,8 @@ void TcpServer::initialize_socket() {
   server_address.sin_family = AF_INET;
   server_address.sin_addr.s_addr = INADDR_ANY;
   server_address.sin_port = htons(port);
-  socklen_t server_addrlen = sizeof(server_address);
-  if(bind(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&server_address), server_addrlen) < 0) {
+  socklen_t server_addr_len = sizeof(server_address);
+  if(bind(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&server_address), server_addr_len) < 0) {
     throw std::system_error(errno, std::generic_category(), "bind failed");
   }
   if (listen(socket_ufd.get_fd(), 3) < 0) {
@@ -92,16 +90,11 @@ void TcpServer::epoll_loop() {
           continue;
         }
         TcpConnection* conn = it->second.get();
-        // TODO: add handling for cases when there is no tcp_connection
-        char buffer[100] = {0};
-        ssize_t len = read(conn->ufd.get_fd(), buffer, 100);
-        if (len == 0) {
+        if (conn->read_incoming()) {
           int conn_fd = conn->ufd.get_fd();
           epoll.remove(conn->ufd);
           connections.erase(conn_fd);
           std::cout << "Removed connection: " << conn_fd << std::endl;
-        } else {
-          // TODO
         }
       }
     }
@@ -109,15 +102,15 @@ void TcpServer::epoll_loop() {
 }
 
 void TcpServer::accept_connections() {
-  while(true) {
+  bool accepting = true;
+  while(accepting) {
     sockaddr_in conn_addr;
     socklen_t conn_addr_len = sizeof(conn_addr);
     int conn_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&conn_addr), &conn_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
 
     if (conn_fd < 0) {
       std::cout << "No more connections to add" << std::endl;
-      // TODO: add error handling
-      break;
+      accepting = false;
     } else {
       connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr);
 

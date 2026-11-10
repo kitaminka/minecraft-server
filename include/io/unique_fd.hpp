@@ -5,7 +5,7 @@ class UniqueFd {
 
   public:
     UniqueFd();
-    UniqueFd(int fd);
+    explicit UniqueFd(int fd);
 
     UniqueFd(const UniqueFd&) = delete;
     UniqueFd& operator=(const UniqueFd&) = delete;

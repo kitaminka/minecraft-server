@@ -1,9 +1,8 @@
-#include <bits/types/sigset_t.h>
+#include <signal.h>
+#include <pthread.h>
 #include <exception>
 #include <iostream>
-#include <csignal>
 #include <thread>
-#include <unistd.h>
 
 #include "network/tcp_server.hpp"
 

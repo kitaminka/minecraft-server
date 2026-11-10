@@ -3,6 +3,7 @@
 #include <sys/eventfd.h>
 #include <system_error>
 #include <unistd.h>
+#include <cstdint>
 
 #include "io/epoll.hpp"
 
