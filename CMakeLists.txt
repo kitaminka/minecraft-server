@@ -23,4 +23,6 @@ target_sources(minecraft_server
     src/network/tcp_connection.cpp
     src/io/unique_fd.cpp
     src/io/epoll.cpp
+    src/application.cpp
+    src/io/signal_handler.cpp
 )

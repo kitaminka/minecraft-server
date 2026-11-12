@@ -1,7 +1,6 @@
 #include <iostream>
 #include <memory>
 #include <sys/socket.h>
-#include <thread>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <cerrno>
@@ -11,9 +10,7 @@
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
 
-constexpr int MAX_EVENTS = 32;
-
-TcpServer::TcpServer(int port) : port(port) {}
+TcpServer::TcpServer(Epoll &epoll, int port) : port(port), epoll(epoll)  {}
 
 TcpServer::~TcpServer() {
   stop();
@@ -23,22 +20,10 @@ void TcpServer::start() {
   std::cout << "Starting server on port " << port << std::endl;
 
   initialize_socket();
-  epoll.add(socket_ufd);
-
-  is_running = true;
-
-  network_thread = std::thread(&TcpServer::epoll_loop, this);
+  epoll.add(socket_ufd.get_fd(), this);
 }
 
 void TcpServer::stop() {
-  is_running = false;
-
-  epoll.wakeup();
-
-  if(network_thread.joinable()) {
-    network_thread.join();
-  }
-
   connections.clear();
   socket_ufd.reset();
 }
@@ -65,42 +50,6 @@ void TcpServer::initialize_socket() {
   }
 }
 
-void TcpServer::epoll_loop() {
-  epoll_event events[MAX_EVENTS];
-  int n;
-
-  while(is_running) {
-    n = epoll.wait(events, MAX_EVENTS);
-
-    if (n < 0) {
-      break;
-    }
-
-    std::cout << "Received " << n << " event(s)" << std::endl;
-
-    for (int i = 0; i < n; i++) {
-      epoll_event event = events[i];
-      if (event.data.fd == socket_ufd.get_fd()) {
-        accept_connections();
-      } else {
-        // TcpConnection* tcp_connection = static_cast<TcpConnection*>(event.data.ptr);
-        auto it = connections.find(event.data.fd);
-        if (it == connections.end()) {
-          std::cout << "Client was not found: " << event.data.fd << std::endl;
-          continue;
-        }
-        TcpConnection* conn = it->second.get();
-        if (conn->read_incoming()) {
-          int conn_fd = conn->ufd.get_fd();
-          epoll.remove(conn->ufd);
-          connections.erase(conn_fd);
-          std::cout << "Removed connection: " << conn_fd << std::endl;
-        }
-      }
-    }
-  }
-}
-
 void TcpServer::accept_connections() {
   bool accepting = true;
   while(accepting) {
@@ -112,13 +61,23 @@ void TcpServer::accept_connections() {
       std::cout << "No more connections to add" << std::endl;
       accepting = false;
     } else {
-      connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr);
+      connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr, *this);
 
       // TODO: add error handling
       TcpConnection* conn = connections[conn_fd].get();
-      epoll.add(conn->ufd);
+      epoll.add(conn->ufd.get_fd(), conn);
 
       std::cout << "Added connection: " << conn->ufd.get_fd() << std::endl;
     }
   }
+}
+
+void TcpServer::remove_connection(int fd) {
+  epoll.remove(fd);
+  connections.erase(fd);
+  std::cout << "Removed connection: " << fd << std::endl;
+}
+
+void TcpServer::on_read() {
+  accept_connections();
 }
