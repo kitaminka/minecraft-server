@@ -52,7 +52,7 @@ void Epoll::start_loop() {
 
         auto handler = static_cast<IEpollHandler*>(event.data.ptr);
 
-        if (event.events | EPOLLIN) {
+        if (event.events & EPOLLIN) {
           handler->on_read();
         }
       }

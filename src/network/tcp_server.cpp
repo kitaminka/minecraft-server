@@ -25,6 +25,7 @@ void TcpServer::start() {
 
 void TcpServer::stop() {
   connections.clear();
+  epoll.remove(socket_ufd.get_fd());
   socket_ufd.reset();
 }
 

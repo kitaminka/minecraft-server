@@ -2,7 +2,6 @@
 #include <memory>
 #include <netinet/in.h>
 #include <unordered_map>
-#include <memory>
 
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"

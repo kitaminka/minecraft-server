@@ -1,5 +1,4 @@
 #include <csignal>
-#include <signal.h>
 #include <sys/signalfd.h>
 #include <unistd.h>
 #include <iostream>
@@ -20,10 +19,14 @@ SignalHandler::SignalHandler(Epoll& epoll) : epoll(epoll) {
   epoll.add(ufd.get_fd(), this);
 }
 
+SignalHandler::~SignalHandler() {
+  epoll.remove(ufd.get_fd());
+}
+
 void SignalHandler::on_read() {
   signalfd_siginfo info;
   read(ufd.get_fd(), &info, sizeof(info));
-  std::cout << "Got signal: " << info.ssi_code << std::endl;
+  std::cout << "Got signal: " << gsignal(info.ssi_signo) << std::endl;
 
   if (info.ssi_signo == SIGINT || info.ssi_signo == SIGTERM)  {
     std::cout << "Stopping server..." << std::endl;
