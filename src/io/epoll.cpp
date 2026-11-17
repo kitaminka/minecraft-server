@@ -57,5 +57,13 @@ void Epoll::start_loop() {
         }
       }
     }
+
+    if (post_process_callback) {
+      post_process_callback();
+    }
   }
+}
+
+void Epoll::set_post_process_callback(std::function<void()> callback) {
+  post_process_callback = callback;
 }

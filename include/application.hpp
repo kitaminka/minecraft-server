@@ -5,12 +5,13 @@
 #include "network/tcp_server.hpp"
 
 class Application {
-  Epoll epoll;
-  TcpServer server;
-  SignalHandler signal_handler;
-
   public:
     Application();
+
     void start();
     void stop();
+  private:
+    Epoll epoll;
+    SignalHandler signal_handler;
+    TcpServer server;
 };

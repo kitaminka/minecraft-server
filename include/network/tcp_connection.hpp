@@ -8,10 +8,6 @@
 #include "network/connection_manager.hpp"
 
 class TcpConnection : public IEpollHandler {
-  static constexpr int READ_CHUNK_SIZE = 4096;
-
-  std::vector<uint8_t> read_buffer;
-
   public:
     UniqueFd ufd;
     sockaddr_in address;
@@ -21,4 +17,8 @@ class TcpConnection : public IEpollHandler {
 
     bool read_incoming();
     void on_read() override;
+  private:
+    static constexpr int READ_CHUNK_SIZE = 4096;
+
+    std::vector<uint8_t> read_buffer;
 };

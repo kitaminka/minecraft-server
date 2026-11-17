@@ -21,10 +21,12 @@ void TcpServer::start() {
 
   initialize_socket();
   epoll.add(socket_ufd.get_fd(), this);
+  epoll.set_post_process_callback([this](){ process_disconnected(); });
 }
 
 void TcpServer::stop() {
   connections.clear();
+  epoll.set_post_process_callback(nullptr);
   epoll.remove(socket_ufd.get_fd());
   socket_ufd.reset();
 }
@@ -73,12 +75,19 @@ void TcpServer::accept_connections() {
   }
 }
 
-void TcpServer::remove_connection(int fd) {
-  epoll.remove(fd);
-  connections.erase(fd);
-  std::cout << "Removed connection: " << fd << std::endl;
+void TcpServer::disconnected(int fd) {
+  pending_disconnect.push_back(fd);
 }
 
 void TcpServer::on_read() {
   accept_connections();
+}
+
+void TcpServer::process_disconnected() {
+  for (int fd : pending_disconnect) {
+    epoll.remove(fd);
+    connections.erase(fd);
+    std::cout << "Removed connection: " << fd << std::endl;
+  }
+  pending_disconnect.clear();
 }

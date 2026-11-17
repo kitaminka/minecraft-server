@@ -1,8 +1,6 @@
 #pragma once
 
 class UniqueFd {
-  int fd{-1};
-
   public:
     UniqueFd();
     explicit UniqueFd(int fd);
@@ -18,4 +16,6 @@ class UniqueFd {
     int get_fd() const;
     bool is_active() const;
     void reset();
+  private:
+    int fd{-1};
 };

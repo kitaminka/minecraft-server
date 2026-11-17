@@ -2,31 +2,35 @@
 #include <memory>
 #include <netinet/in.h>
 #include <unordered_map>
+#include <vector>
 
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
 #include "io/epoll.hpp"
 
 class TcpServer : public IEpollHandler, public IConnectionManager {
-  int port{0};
-
-  Epoll &epoll;
-
-  UniqueFd socket_ufd;
-
-  std::unordered_map<int, std::unique_ptr<TcpConnection>> connections;
-
-  sockaddr_in server_address{};
-
-  void initialize_socket();
-  void accept_connections();
-
   public:
     explicit TcpServer(Epoll& epoll, int port);
     ~TcpServer();
+
     void start();
     void stop();
 
     void on_read() override;
-    void remove_connection(int fd) override;
+    void disconnected(int fd) override;
+  private:
+    int port{0};
+
+    Epoll &epoll;
+
+    UniqueFd socket_ufd;
+    sockaddr_in server_address{};
+
+    std::unordered_map<int, std::unique_ptr<TcpConnection>> connections;
+
+    std::vector<int> pending_disconnect;
+
+    void initialize_socket();
+    void accept_connections();
+    void process_disconnected();
 };

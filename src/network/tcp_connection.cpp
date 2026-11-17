@@ -34,6 +34,6 @@ bool TcpConnection::read_incoming() {
 
 void TcpConnection::on_read() {
   if (read_incoming()) {
-    manager.remove_connection(ufd.get_fd());
+    manager.disconnected(ufd.get_fd());
   }
 }
