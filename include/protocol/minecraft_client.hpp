@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
+#include <span>
 
 class MinecraftClient {
   public:
-    void read_packet(std::vector<uint8_t>& buffer);
+    int read_packet(std::span<const uint8_t> buffer);
 };

@@ -37,6 +37,7 @@ void TcpConnection::on_read() {
   if (read_incoming()) {
     manager.disconnected(ufd.get_fd());
   } else {
-    client.read_packet(read_buffer);
+    int consumed_bytes = client.read_packet(read_buffer);
+    read_buffer.erase(read_buffer.begin(), read_buffer.begin() + consumed_bytes);
   }
 }

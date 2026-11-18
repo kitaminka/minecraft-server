@@ -1,11 +1,11 @@
+#include <cstddef>
 #include <cstdint>
 #include <stdexcept>
-#include <vector>
 
 #include "protocol/byte_reader.hpp"
 #include "log/logger.hpp"
 
-ByteReader::ByteReader(std::vector<uint8_t> buffer) : buffer(buffer) {}
+ByteReader::ByteReader(std::span<const uint8_t> buffer) : buffer(buffer) {}
 
 int ByteReader::read_varint() {
   int value = 0;
@@ -31,4 +31,12 @@ uint8_t ByteReader::read_byte() {
   uint8_t value = buffer[cursor_pos];
   cursor_pos++;
   return value;
+}
+
+size_t ByteReader::remaining() {
+  return buffer.size() - static_cast<size_t>(cursor_pos);
+}
+
+int ByteReader::get_pos() {
+  return cursor_pos;
 }

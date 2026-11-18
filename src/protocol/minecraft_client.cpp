@@ -4,11 +4,19 @@
 #include "protocol/byte_reader.hpp"
 #include "log/logger.hpp"
 
-void MinecraftClient::read_packet(std::vector<uint8_t>& buffer) {
+int MinecraftClient::read_packet(std::span<const uint8_t> buffer) {
   ByteReader reader(buffer);
   try {
-    int packet_length = reader.read_varint();
+    size_t packet_length = reader.read_varint();
+    if (reader.remaining() < packet_length) {
+      return 0;
+    }
+    int read = reader.get_pos() + packet_length;
+    int packet_id = reader.read_varint();
+    logger::debug("Got packet with ID: {}", packet_id);
+    return read;
   } catch (const std::exception& e) {
-    logger::error("Failed to read packet lenght: {}", e.what());
+    logger::debug("Failed to read packet length: {}", e.what());
+    return 0;
   }
 }
