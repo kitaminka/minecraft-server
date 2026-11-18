@@ -5,5 +5,5 @@
 
 class MinecraftClient {
   public:
-    void read_frame(std::vector<uint8_t>& buffer);
+    void read_packet(std::vector<uint8_t>& buffer);
 };

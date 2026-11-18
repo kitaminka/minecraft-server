@@ -37,6 +37,6 @@ void TcpConnection::on_read() {
   if (read_incoming()) {
     manager.disconnected(ufd.get_fd());
   } else {
-    client.read_frame(read_buffer);
+    client.read_packet(read_buffer);
   }
 }
