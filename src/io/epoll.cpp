@@ -3,9 +3,9 @@
 #include <sys/eventfd.h>
 #include <system_error>
 #include <unistd.h>
-#include <iostream>
 
 #include "io/epoll.hpp"
+#include "log/logger.hpp"
 
 Epoll::Epoll() : epoll_ufd(UniqueFd(epoll_create1(EPOLL_CLOEXEC))) {
   if (!epoll_ufd.is_active()) {
@@ -42,7 +42,7 @@ void Epoll::start_loop() {
   while(loop_running) {
     int event_count = wait();
 
-    std::cout << "Received " << event_count << " event(s)" << std::endl;
+    logger::debug("Received {} event(s)", event_count);
 
     if (event_count < 0 && errno != EINTR) {
       loop_running = false;

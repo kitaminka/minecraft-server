@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <iostream>
 
 #include "io/unique_fd.hpp"
 #include "log/logger.hpp"

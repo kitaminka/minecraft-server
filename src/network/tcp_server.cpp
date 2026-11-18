@@ -1,4 +1,3 @@
-#include <iostream>
 #include <memory>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -62,7 +61,6 @@ void TcpServer::accept_connections() {
     int conn_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&conn_addr), &conn_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
 
     if (conn_fd < 0) {
-      std::cout << "No more connections to add" << std::endl;
       accepting = false;
     } else {
       connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr, *this);
@@ -71,7 +69,7 @@ void TcpServer::accept_connections() {
       TcpConnection* conn = connections[conn_fd].get();
       epoll.add(conn->ufd.get_fd(), conn);
 
-      std::cout << "Added connection: " << conn->ufd.get_fd() << std::endl;
+      logger::info("Added connection: {}", conn->ufd.get_fd());
     }
   }
 }
@@ -88,7 +86,7 @@ void TcpServer::process_disconnected() {
   for (int fd : pending_disconnect) {
     epoll.remove(fd);
     connections.erase(fd);
-    std::cout << "Removed connection: " << fd << std::endl;
+    logger::info("Removed connection: {}", fd);
   }
   pending_disconnect.clear();
 }

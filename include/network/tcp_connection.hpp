@@ -6,12 +6,14 @@
 #include "io/epoll.hpp"
 #include "io/unique_fd.hpp"
 #include "network/connection_manager.hpp"
+#include "protocol/minecraft_client.hpp"
 
 class TcpConnection : public IEpollHandler {
   public:
     UniqueFd ufd;
     sockaddr_in address;
     IConnectionManager &manager;
+    MinecraftClient client;
 
     TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager);
 
