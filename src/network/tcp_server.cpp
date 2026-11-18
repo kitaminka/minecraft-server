@@ -9,6 +9,7 @@
 #include "network/tcp_server.hpp"
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
+#include "log/logger.hpp"
 
 TcpServer::TcpServer(Epoll &epoll, int port) : port(port), epoll(epoll)  {}
 
@@ -17,7 +18,7 @@ TcpServer::~TcpServer() {
 }
 
 void TcpServer::start() {
-  std::cout << "Starting server on port " << port << std::endl;
+  logger::info("Starting server on port {}", port);
 
   initialize_socket();
   epoll.add(socket_ufd.get_fd(), this);

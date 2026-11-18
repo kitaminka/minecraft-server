@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "io/unique_fd.hpp"
+#include "log/logger.hpp"
 
 UniqueFd::UniqueFd() : fd(-1) {}
 
@@ -36,7 +37,7 @@ UniqueFd::UniqueFd(UniqueFd&& other) noexcept : fd(other.fd) {
 
 void UniqueFd::reset() {
   if (is_active()) {
-    std::cout << "Closing fd: " << fd << std::endl;
+    logger::debug("Closing fd: {}", fd);
     close(fd);
     fd = -1;
   }

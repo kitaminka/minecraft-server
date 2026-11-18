@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set (CMAKE_CXX_STANDARD 20)
 
 project(minecraft_server)
 
@@ -24,5 +25,6 @@ target_sources(minecraft_server
     src/io/unique_fd.cpp
     src/io/epoll.cpp
     src/application.cpp
+    src/log/logger.cpp
     src/io/signal_handler.cpp
 )
