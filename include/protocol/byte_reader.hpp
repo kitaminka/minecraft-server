@@ -6,8 +6,10 @@
 class ByteReader {
   public:
     ByteReader(std::span<const uint8_t> buffer);
-    int read_varint();
+
     uint8_t read_byte();
+    int read_varint();
+
     size_t remaining();
     int get_pos();
   private:

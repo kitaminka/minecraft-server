@@ -12,8 +12,6 @@ class TcpConnection : public IEpollHandler {
   public:
     UniqueFd ufd;
     sockaddr_in address;
-    IConnectionManager &manager;
-    MinecraftClient client;
 
     TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager);
 
@@ -22,5 +20,9 @@ class TcpConnection : public IEpollHandler {
   private:
     static constexpr int READ_CHUNK_SIZE = 4096;
 
+    IConnectionManager &manager;
+    MinecraftClient client;
+
     std::vector<uint8_t> read_buffer;
+    std::vector<uint8_t> write_buffer;
 };

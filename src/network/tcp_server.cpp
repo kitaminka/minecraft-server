@@ -48,7 +48,7 @@ void TcpServer::initialize_socket() {
   if(bind(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&server_address), server_addr_len) < 0) {
     throw std::system_error(errno, std::generic_category(), "bind failed");
   }
-  if (listen(socket_ufd.get_fd(), 3) < 0) {
+  if (listen(socket_ufd.get_fd(), LISTEN_QUEUE_SIZE) < 0) {
     throw std::system_error(errno, std::generic_category(), "listen failed");
   }
 }

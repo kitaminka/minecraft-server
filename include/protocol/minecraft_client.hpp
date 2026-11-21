@@ -7,7 +7,9 @@ enum class State {
   Handshaking,
   Status,
   Login,
-  Configuration
+  Transfer,
+  Configuration,
+  Play
 };
 
 class MinecraftClient {

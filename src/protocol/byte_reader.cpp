@@ -7,6 +7,15 @@
 
 ByteReader::ByteReader(std::span<const uint8_t> buffer) : buffer(buffer) {}
 
+uint8_t ByteReader::read_byte() {
+  if (static_cast<size_t>(cursor_pos) >= buffer.size()) {
+    throw std::runtime_error("Trying to read outside buffer");
+  }
+  uint8_t value = buffer[cursor_pos];
+  cursor_pos++;
+  return value;
+}
+
 int ByteReader::read_varint() {
   int value = 0;
 
@@ -22,15 +31,6 @@ int ByteReader::read_varint() {
   }
 
   throw std::runtime_error("VarInt too long");
-}
-
-uint8_t ByteReader::read_byte() {
-  if (static_cast<size_t>(cursor_pos) >= buffer.size()) {
-    throw std::runtime_error("Trying to read outside buffer");
-  }
-  uint8_t value = buffer[cursor_pos];
-  cursor_pos++;
-  return value;
 }
 
 size_t ByteReader::remaining() {

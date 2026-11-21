@@ -1,7 +1,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <cerrno>
-#include <iostream>
 
 #include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"

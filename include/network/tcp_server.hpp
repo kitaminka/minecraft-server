@@ -19,6 +19,8 @@ class TcpServer : public IEpollHandler, public IConnectionManager {
     void on_read() override;
     void disconnected(int fd) override;
   private:
+    static constexpr int LISTEN_QUEUE_SIZE = 128;
+
     int port{0};
 
     Epoll &epoll;
