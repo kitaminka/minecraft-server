@@ -18,6 +18,8 @@ class TcpServer : public IEpollHandler, public IConnectionManager {
 
     void on_read() override;
     void disconnected(int fd) override;
+    void enable_writing_flag(int fd) override;
+    void disable_writing_flag(int fd) override;
   private:
     static constexpr int LISTEN_QUEUE_SIZE = 128;
 

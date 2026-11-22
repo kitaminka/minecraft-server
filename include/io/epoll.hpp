@@ -12,6 +12,10 @@ class Epoll {
 
     void add(int fd, IEpollHandler *handler);
     void remove(int fd);
+
+    void enable_writing_flag(int fd, IEpollHandler *handler);
+    void disable_writing_flag(int fd, IEpollHandler *handler);
+
     void start_loop();
     void stop_loop();
 

@@ -19,7 +19,27 @@ void Epoll::add(int fd, IEpollHandler *handler) {
   socket_event.data.ptr = handler;
 
   if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_ADD, fd, &socket_event) < 0) {
-    throw std::system_error(errno, std::generic_category(), "Adding server socket to epoll failed");
+    throw std::system_error(errno, std::generic_category(), "Adding socket to epoll failed");
+  }
+}
+
+void Epoll::enable_writing_flag(int fd, IEpollHandler *handler) {
+  epoll_event socket_event;
+  socket_event.events = EPOLLIN | EPOLLOUT;
+  socket_event.data.ptr = handler;
+
+  if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_MOD, fd, &socket_event) < 0) {
+    throw std::system_error(errno, std::generic_category(), "Modifying socket in epoll failed");
+  }
+}
+
+void Epoll::disable_writing_flag(int fd, IEpollHandler *handler) {
+  epoll_event socket_event;
+  socket_event.events = EPOLLIN;
+  socket_event.data.ptr = handler;
+
+  if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_MOD, fd, &socket_event) < 0) {
+    throw std::system_error(errno, std::generic_category(), "Modifying socket in epoll failed");
   }
 }
 
@@ -54,6 +74,9 @@ void Epoll::start_loop() {
 
         if (event.events & EPOLLIN) {
           handler->on_read();
+        }
+        if (event.events & EPOLLOUT) {
+          handler->on_write();
         }
       }
     }

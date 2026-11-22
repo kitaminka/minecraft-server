@@ -17,11 +17,18 @@ class TcpConnection : public IEpollHandler {
 
     bool read_incoming();
     void on_read() override;
+    void on_write() override;
   private:
     static constexpr int READ_CHUNK_SIZE = 4096;
+    static constexpr int READ_CLEAR_THRESHOLD = 4096;
+
+    static constexpr int WRITE_CLEAR_THRESHOLD = 4096;
 
     IConnectionManager &manager;
     MinecraftClient client;
+
+    int read_cursor{0};
+    int write_cursor{0};
 
     std::vector<uint8_t> read_buffer;
     std::vector<uint8_t> write_buffer;

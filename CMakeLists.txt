@@ -28,5 +28,6 @@ target_sources(minecraft_server
     src/log/logger.cpp
     src/io/signal_handler.cpp
     src/protocol/byte_reader.cpp
+    src/protocol/byte_writer.cpp
     src/protocol/minecraft_client.cpp
 )

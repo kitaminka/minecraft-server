@@ -33,6 +33,30 @@ int ByteReader::read_varint() {
   throw std::runtime_error("VarInt too long");
 }
 
+std::string ByteReader::read_string(int max_length) {
+  int length = read_varint();
+
+  // TODO add errors for exceeding max length or remaining
+
+  std::string res(buffer.begin() + cursor_pos, buffer.begin() + cursor_pos + length);
+
+  cursor_pos += length;
+
+  return res;
+}
+
+uint16_t ByteReader::read_unsigned_short() {
+  return (read_byte() << 8) | read_byte();
+}
+
+int64_t ByteReader::read_long() {
+  uint64_t res = 0;
+  for (int i = 7; i >= 0; i--) {
+    res |= static_cast<uint64_t>(read_byte()) << (i * 8);
+  }
+  return static_cast<int64_t>(res);
+}
+
 size_t ByteReader::remaining() {
   return buffer.size() - static_cast<size_t>(cursor_pos);
 }

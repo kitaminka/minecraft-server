@@ -78,6 +78,14 @@ void TcpServer::disconnected(int fd) {
   pending_disconnect.push_back(fd);
 }
 
+void TcpServer::enable_writing_flag(int fd) {
+  epoll.enable_writing_flag(fd, connections[fd].get());
+}
+
+void TcpServer::disable_writing_flag(int fd) {
+  epoll.disable_writing_flag(fd, connections[fd].get());
+}
+
 void TcpServer::on_read() {
   accept_connections();
 }
