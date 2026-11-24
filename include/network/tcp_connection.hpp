@@ -15,7 +15,6 @@ class TcpConnection : public IEpollHandler {
 
     TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager);
 
-    bool read_incoming();
     void on_read() override;
     void on_write() override;
   private:
@@ -26,6 +25,12 @@ class TcpConnection : public IEpollHandler {
 
     IConnectionManager &manager;
     MinecraftClient client;
+
+    bool read_incoming();
+
+    ssize_t write_bytes(std::span<const uint8_t> buffer);
+    void send_outgoing();
+    void disconnect();
 
     int read_cursor{0};
     int write_cursor{0};

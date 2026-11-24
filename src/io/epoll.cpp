@@ -14,37 +14,46 @@ Epoll::Epoll() : epoll_ufd(UniqueFd(epoll_create1(EPOLL_CLOEXEC))) {
 }
 
 void Epoll::add(int fd, IEpollHandler *handler) {
-  epoll_event socket_event;
-  socket_event.events = EPOLLIN;
-  socket_event.data.ptr = handler;
-
-  if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_ADD, fd, &socket_event) < 0) {
-    throw std::system_error(errno, std::generic_category(), "Adding socket to epoll failed");
-  }
+  modify(fd, handler, EPOLL_CTL_ADD, EPOLLIN);
 }
 
 void Epoll::enable_writing_flag(int fd, IEpollHandler *handler) {
-  epoll_event socket_event;
-  socket_event.events = EPOLLIN | EPOLLOUT;
-  socket_event.data.ptr = handler;
-
-  if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_MOD, fd, &socket_event) < 0) {
-    throw std::system_error(errno, std::generic_category(), "Modifying socket in epoll failed");
-  }
+  modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN | EPOLLOUT);
 }
 
 void Epoll::disable_writing_flag(int fd, IEpollHandler *handler) {
-  epoll_event socket_event;
-  socket_event.events = EPOLLIN;
-  socket_event.data.ptr = handler;
-
-  if(epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_MOD, fd, &socket_event) < 0) {
-    throw std::system_error(errno, std::generic_category(), "Modifying socket in epoll failed");
-  }
+  modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN);
 }
 
 void Epoll::remove(int fd) {
-  epoll_ctl(epoll_ufd.get_fd(), EPOLL_CTL_DEL, fd, nullptr);
+  modify(fd, nullptr, EPOLL_CTL_DEL, 0);
+}
+
+void Epoll::modify(int fd, IEpollHandler *handler, int op, uint32_t events) {
+  std::string op_s;
+  switch (op) {
+    case EPOLL_CTL_ADD:
+      op_s = "Adding";
+      break;
+    case EPOLL_CTL_DEL:
+      op_s = "Deleting";
+      break;
+    case EPOLL_CTL_MOD:
+      op_s = "Modifying";
+      break;
+  }
+
+  epoll_event socket_event;
+  if (handler) {
+    socket_event.events = events;
+    socket_event.data.ptr = handler;
+  }
+
+  if(epoll_ctl(epoll_ufd.get_fd(), op, fd, &socket_event) < 0) {
+    throw std::system_error(errno, std::generic_category(), std::format("Epoll: {} socket failed", op_s));
+  }
+
+  logger::debug("Epoll: {} socket {} succeeded", op_s, fd);
 }
 
 int Epoll::wait() {

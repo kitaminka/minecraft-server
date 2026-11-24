@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <functional>
 #include <sys/epoll.h>
 
@@ -29,6 +30,8 @@ class Epoll {
     epoll_event events[MAX_EVENTS];
 
     int wait();
+
+    void modify(int fd, IEpollHandler *handler, int operation, uint32_t events);
 
     std::function<void()> post_process_callback;
 

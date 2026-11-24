@@ -1,51 +1,101 @@
 #include <cstdint>
 #include <exception>
+#include <span>
 
 #include "protocol/minecraft_client.hpp"
 #include "protocol/byte_reader.hpp"
 #include "log/logger.hpp"
-#include "protocol/byte_writer.hpp"
+#include "protocol/packets/handshaking_packets.hpp"
+#include "protocol/packets/status_packets.hpp"
 
-int MinecraftClient::handle_packet(std::span<const uint8_t> buffer) {
+int MinecraftClient::handle_packets(std::span<const uint8_t> buffer) {
   ByteReader reader(buffer);
-  try {
-    size_t packet_length = reader.read_varint();
-    if (reader.remaining() < packet_length) {
-      return 0;
+  int bytes_consumed = 0;
+
+  while (reader.remaining() > 0) {
+    size_t packet_length = 0;
+    try {
+      packet_length = reader.read_varint();
+    } catch (const std::exception& e) {
+      logger::debug("Failed to read packet length: {}", e.what());
+      break;
     }
-    int read = reader.get_pos() + packet_length;
-    int packet_id = reader.read_varint();
+
+    if (reader.remaining() < packet_length) {
+      logger::debug("Not full packet received");
+      break;
+    }
+
+    int id_start = reader.get_pos();
+    int packet_id = 0;
+    try {
+      packet_id = reader.read_varint();
+    } catch (const std::exception& e) {
+      logger::error("Failed to read packet ID: {}", e.what());
+      disconnect_after_writing = true;
+      break;
+    }
     logger::debug("Got packet with ID: {}", packet_id);
+    size_t id_length = reader.get_pos() - id_start;
 
-    handle_packet_data(packet_id, reader);
+    if (id_length > packet_length) {
+      logger::error("Received packet length smaller than packet ID");
+      disconnect_after_writing = true;
+      break;
+    }
 
-    return read;
-  } catch (const std::exception& e) {
-    logger::debug("Failed to read packet length: {}", e.what());
-    return 0;
+    size_t payload_size = packet_length - id_length;
+    auto packet_data = buffer.subspan(reader.get_pos(), payload_size);
+    ByteReader data_reader(packet_data);
+
+    handle_packet_data(packet_id, data_reader);
+
+    reader.skip(payload_size);
+    bytes_consumed = reader.get_pos();
   }
+
+  return bytes_consumed;
 }
 
 void MinecraftClient::handle_packet_data(int packet_id, ByteReader& reader) {
   switch (state) {
     case State::Handshaking:
-      if (packet_id == 0) handle_intention(reader);
+      handshaking_handler(packet_id, reader);
       break;
     case State::Status:
-      if (packet_id == 0) handle_status_request();
-      if (packet_id == 1) handle_ping_request(reader);
+      status_handler(packet_id, reader);
+      break;
+    case State::Login:
+      break;
+    case State::Play:
+      break;
+  }
+}
+
+void MinecraftClient::handshaking_handler(int packet_id, ByteReader& reader) {
+  switch (packet_id) {
+    case 0x00:
+      handle_intention(reader);
+      break;
+  }
+}
+
+void MinecraftClient::status_handler(int packet_id, ByteReader& reader) {
+  switch (packet_id) {
+    case 0x00:
+      handle_status_request();
+      break;
+    case 0x01:
+      handle_ping_request(reader);
       break;
   }
 }
 
 void MinecraftClient::handle_intention(ByteReader& reader) {
-  int protocol_version = reader.read_varint();
-  std::string server_address = reader.read_string(200);
-  uint16_t server_port = reader.read_unsigned_short();
-  Intent intent = static_cast<Intent>(reader.read_varint());
-  logger::debug("Protocol version: {} Server address: {} Port: {}", protocol_version, server_address, server_port);
+  Intention packet = Intention::read(reader);
+  logger::debug("Protocol version: {} Server address: {} Port: {}", packet.protocol_version, packet.server_address, packet.server_port);
 
-  switch (intent) {
+  switch (packet.intent) {
     case Intent::Status:
       state = State::Status;
       logger::debug("Setting state to Status");
@@ -54,31 +104,27 @@ void MinecraftClient::handle_intention(ByteReader& reader) {
       state = State::Login;
       logger::debug("Setting state to Login");
       break;
-    case Intent::Transfer:
-      state = State::Transfer;
-      logger::debug("Setting state to Transfer");
-      break;
   }
 }
 
 void MinecraftClient::handle_status_request() {
-  ByteWriter writer(outgoing);
+  const std::string status = "{ \"version\": { \"name\": \"1.21.8\", \"protocol\": 340 }, \"players\": { \"max\": 20, \"online\": 1, \"sample\": [ { \"name\": \"Player\", \"id\": \"4566e69f-c907-48ee-8d71-d7ba5aa00d20\" } ] }, \"description\": { \"text\": \"Hello, world!\" }, \"favicon\": \"data:image/png;base64,<data>\", \"enforcesSecureChat\": false }";
 
-  const std::string status = "{ \"version\": { \"name\": \"1.21.8\", \"protocol\": 777 }, \"players\": { \"max\": 20, \"online\": 1, \"sample\": [ { \"name\": \"Player\", \"id\": \"4566e69f-c907-48ee-8d71-d7ba5aa00d20\" } ] }, \"description\": { \"text\": \"Hello, world!\" }, \"favicon\": \"data:image/png;base64,<data>\", \"enforcesSecureChat\": false }";
+  StatusResponse response_packet = {
+    .json_status = status
+  };
 
-  writer.write_varint(status.size() + ByteWriter::get_varint_size(0) + ByteWriter::get_varint_size(status.size()));
-  writer.write_varint(0);
-  writer.write_string(status);
+  send_packet(response_packet);
 }
 
 void MinecraftClient::handle_ping_request(ByteReader &reader) {
-  int64_t timestamp = reader.read_long();
+  PingRequest packet = PingRequest::read(reader);
 
-  ByteWriter writer(outgoing);
+  PingResponse response_packet = {
+    .timestamp = packet.timestamp
+  };
 
-  writer.write_varint(ByteWriter::get_varint_size(1) + sizeof(uint64_t));
-  writer.write_varint(1);
-  writer.write_long(timestamp);
+  send_packet(response_packet);
   disconnect_after_writing = true;
 }
 

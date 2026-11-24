@@ -8,7 +8,7 @@
 ByteReader::ByteReader(std::span<const uint8_t> buffer) : buffer(buffer) {}
 
 uint8_t ByteReader::read_byte() {
-  if (static_cast<size_t>(cursor_pos) >= buffer.size()) {
+  if (size_t(cursor_pos) >= buffer.size()) {
     throw std::runtime_error("Trying to read outside buffer");
   }
   uint8_t value = buffer[cursor_pos];
@@ -46,7 +46,9 @@ std::string ByteReader::read_string(int max_length) {
 }
 
 uint16_t ByteReader::read_unsigned_short() {
-  return (read_byte() << 8) | read_byte();
+  uint8_t high = read_byte();
+  uint8_t low = read_byte();
+  return (static_cast<uint16_t>(high) << 8) | low;
 }
 
 int64_t ByteReader::read_long() {
@@ -58,9 +60,13 @@ int64_t ByteReader::read_long() {
 }
 
 size_t ByteReader::remaining() {
-  return buffer.size() - static_cast<size_t>(cursor_pos);
+  return buffer.size() - size_t(cursor_pos);
 }
 
 int ByteReader::get_pos() {
   return cursor_pos;
+}
+
+void ByteReader::skip(size_t count) {
+  cursor_pos += count;
 }

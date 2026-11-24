@@ -74,7 +74,7 @@ void TcpServer::accept_connections() {
   }
 }
 
-void TcpServer::disconnected(int fd) {
+void TcpServer::disconnect(int fd) {
   pending_disconnect.push_back(fd);
 }
 

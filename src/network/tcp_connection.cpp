@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <span>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cerrno>
@@ -35,40 +36,31 @@ bool TcpConnection::read_incoming() {
 
 void TcpConnection::on_read() {
   if (read_incoming()) {
-    manager.disconnected(ufd.get_fd());
+    disconnect();
     return;
   }
 
-  int consumed_bytes = 1;
+  int consumed_bytes = client.handle_packets(std::span(read_buffer).subspan(read_cursor));
+  read_cursor += consumed_bytes;
+  logger::debug("Consumed {} bytes from read buffer, cursor position: {}", consumed_bytes, read_cursor);
 
-  while (consumed_bytes != 0 && read_cursor < static_cast<int>(read_buffer.size())) {
-    consumed_bytes = client.handle_packet(std::span<const uint8_t>(read_buffer).subspan(read_cursor));
-    read_cursor += consumed_bytes;
-    logger::debug("Consumed {} bytes from read buffer, cursor position: {}", consumed_bytes, read_cursor);
-  }
-
-  logger::debug("Ended buffer reading iteration");
-  if (read_cursor > READ_CLEAR_THRESHOLD || read_cursor == static_cast<int>(read_buffer.size())) {
+  if (read_cursor > READ_CLEAR_THRESHOLD || read_cursor == int(read_buffer.size())) {
     read_buffer.erase(read_buffer.begin(), read_buffer.begin() + read_cursor);
     read_cursor = 0;
     logger::debug("Cleared read buffer");
   }
 
-  if (!client.get_outgoing().empty()) {
-    write_buffer.insert(write_buffer.end(), client.get_outgoing().begin(), client.get_outgoing().end());
-    client.clear_outgoing();
-    manager.enable_writing_flag(ufd.get_fd());
-  }
+  send_outgoing();
 }
 
 void TcpConnection::on_write() {
-  int bytes_written = write(ufd.get_fd(), write_buffer.data() + write_cursor, write_buffer.size() - write_cursor);
+  ssize_t bytes_written = write_bytes(std::span(write_buffer).subspan(write_cursor));
 
   if (bytes_written == -1) {
     if (errno == EAGAIN) {
       return;
     }
-    manager.disconnected(ufd.get_fd());
+    disconnect();
     return;
   }
 
@@ -80,12 +72,55 @@ void TcpConnection::on_write() {
     logger::debug("Cleared write buffer");
   }
 
-  if (write_buffer.empty() || write_buffer.size() == static_cast<size_t>(write_cursor)) {
+  if (write_buffer.empty() || write_buffer.size() == size_t(write_cursor)) {
     write_buffer.clear();
     manager.disable_writing_flag(ufd.get_fd());
     if (client.disconnect_after_writing) {
-      manager.disconnected(ufd.get_fd());
+      disconnect();
     }
     return;
   }
+}
+
+void TcpConnection::send_outgoing() {
+  if (client.get_outgoing().empty()) {
+    if (write_buffer.empty() && client.disconnect_after_writing) {
+      disconnect();
+    }
+    return;
+  }
+
+  ssize_t sent = 0;
+
+  if (write_buffer.empty()) {
+    sent = write_bytes(client.get_outgoing());
+  }
+
+  if (sent == -1) {
+    if (errno == EAGAIN) {
+      sent = 0;
+    } else {
+      manager.disconnect(ufd.get_fd());
+      return;
+    }
+  }
+
+  if (sent < ssize_t(client.get_outgoing().size())) {
+    write_buffer.insert(write_buffer.end(), client.get_outgoing().begin() + sent, client.get_outgoing().end());
+    manager.enable_writing_flag(ufd.get_fd());
+  }
+
+  client.clear_outgoing();
+
+  if (write_buffer.empty() && client.disconnect_after_writing) {
+    disconnect();
+  }
+}
+
+ssize_t TcpConnection::write_bytes(std::span<const uint8_t> buffer) {
+  return write(ufd.get_fd(), buffer.data(), buffer.size());
+}
+
+void TcpConnection::disconnect() {
+  manager.disconnect(ufd.get_fd());
 }

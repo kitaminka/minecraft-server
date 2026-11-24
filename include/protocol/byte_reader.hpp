@@ -16,6 +16,7 @@ class ByteReader {
 
     size_t remaining();
     int get_pos();
+    void skip(size_t count);
   private:
     std::span<const uint8_t> buffer;
 
