@@ -2,6 +2,7 @@
 #include <memory>
 #include <netinet/in.h>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "io/epoll.hpp"
@@ -33,7 +34,7 @@ private:
 
   std::unordered_map<int, std::unique_ptr<TcpConnection>> connections;
 
-  std::vector<int> pending_disconnect;
+  std::unordered_set<int> pending_disconnect;
 
   void initialize_socket();
   void accept_connections();

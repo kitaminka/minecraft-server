@@ -8,7 +8,8 @@ project(minecraft_server)
 add_executable(minecraft_server)
 
 find_package(Threads)
-target_link_libraries(minecraft_server PRIVATE Threads::Threads)
+find_package(OpenSSL)
+target_link_libraries(minecraft_server PRIVATE Threads::Threads OpenSSL::Crypto)
 
 target_compile_options(minecraft_server PRIVATE -Wall -Wextra -Wpedantic -Wold-style-cast)
 

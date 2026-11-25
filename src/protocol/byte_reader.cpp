@@ -36,7 +36,9 @@ int ByteReader::read_varint() {
 std::string ByteReader::read_string(int max_length) {
   int length = read_varint();
 
-  // TODO add errors for exceeding max length or remaining
+  if (length < 0 || size_t(length) > remaining() || length > max_length) {
+    throw std::runtime_error("Invalid string length");
+  }
 
   std::string res(buffer.begin() + cursor_pos, buffer.begin() + cursor_pos + length);
 

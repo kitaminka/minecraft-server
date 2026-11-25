@@ -38,6 +38,8 @@ private:
 
   void handle_login_start(ByteReader& reader);
 
+  std::string username_to_uuid(std::string_view username);
+
   template <typename ClientBoundPacket> void send_packet(const ClientBoundPacket& packet) {
     std::vector<uint8_t> payload;
     ByteWriter payload_writer(payload);

@@ -72,7 +72,7 @@ void TcpServer::accept_connections() {
   }
 }
 
-void TcpServer::disconnect(int fd) { pending_disconnect.push_back(fd); }
+void TcpServer::disconnect(int fd) { pending_disconnect.insert(fd); }
 
 void TcpServer::enable_writing_flag(int fd) { epoll.enable_writing_flag(fd, connections[fd].get()); }
 

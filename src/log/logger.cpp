@@ -10,7 +10,7 @@ Logger& Logger::instance() {
 
 void Logger::log(LogLevel level, const std::string& message) { std::cout << "[" << level_to_str(level) << "] " << message << std::endl; }
 
-std::string Logger::level_to_str(LogLevel level) {
+std::string_view Logger::level_to_str(LogLevel level) {
   switch (level) {
   case LogLevel::DEBUG:
     return "DEBUG";
