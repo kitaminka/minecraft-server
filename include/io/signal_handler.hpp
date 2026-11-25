@@ -5,12 +5,12 @@
 
 class SignalHandler : public IEpollHandler {
 public:
-  SignalHandler(Epoll &epoll);
+  SignalHandler(Epoll& epoll);
   ~SignalHandler();
 
   void on_read() override;
 
 private:
   UniqueFd ufd;
-  Epoll &epoll;
+  Epoll& epoll;
 };

@@ -13,7 +13,7 @@ public:
   UniqueFd ufd;
   sockaddr_in address;
 
-  TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager);
+  TcpConnection(int fd, sockaddr_in address, IConnectionManager& manager);
 
   void on_read() override;
   void on_write() override;
@@ -24,7 +24,7 @@ private:
 
   static constexpr int WRITE_CLEAR_THRESHOLD = 4096;
 
-  IConnectionManager &manager;
+  IConnectionManager& manager;
   MinecraftClient client;
 
   bool read_incoming();

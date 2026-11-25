@@ -10,7 +10,7 @@
 
 class TcpServer : public IEpollHandler, public IConnectionManager {
 public:
-  explicit TcpServer(Epoll &epoll, int port);
+  explicit TcpServer(Epoll& epoll, int port);
   ~TcpServer();
 
   void start();
@@ -26,7 +26,7 @@ private:
 
   int port{0};
 
-  Epoll &epoll;
+  Epoll& epoll;
 
   UniqueFd socket_ufd;
   sockaddr_in server_address{};

@@ -5,18 +5,9 @@
 #include <cstdint>
 #include <string>
 
-enum class Dimension {
-  Nether = -1,
-  Overworld = 0,
-  End = 1
-};
+enum class Dimension { Nether = -1, Overworld = 0, End = 1 };
 
-enum class Difficulty {
-  Peaceful,
-  Easy,
-  Normal,
-  Hard
-};
+enum class Difficulty { Peaceful, Easy, Normal, Hard };
 
 struct JoinGame {
   static constexpr int ID = 0x23;
@@ -29,7 +20,7 @@ struct JoinGame {
   std::string level_type{"default"};
   bool reduced_debug_info{false};
 
-  void write(ByteWriter &writer) const {
+  void write(ByteWriter& writer) const {
     writer.write_int(entity_id);
     writer.write_byte(gamemode);
     writer.write_int(static_cast<int32_t>(dimension));

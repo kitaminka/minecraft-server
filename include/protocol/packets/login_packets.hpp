@@ -8,7 +8,7 @@
 struct LoginStart {
   std::string username;
 
-  static LoginStart read(ByteReader &reader) { return {.username = reader.read_string(16)}; }
+  static LoginStart read(ByteReader& reader) { return {.username = reader.read_string(16)}; }
 };
 
 struct LoginSuccess {
@@ -17,7 +17,7 @@ struct LoginSuccess {
   std::string uuid;
   std::string username;
 
-  void write(ByteWriter &writer) const {
+  void write(ByteWriter& writer) const {
     writer.write_string(uuid);
     writer.write_string(username);
   }

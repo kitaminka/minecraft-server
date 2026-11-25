@@ -18,7 +18,7 @@ int MinecraftClient::handle_packets(std::span<const uint8_t> buffer) {
     size_t packet_length = 0;
     try {
       packet_length = reader.read_varint();
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
       logger::debug("Failed to read packet length: {}", e.what());
       break;
     }
@@ -32,7 +32,7 @@ int MinecraftClient::handle_packets(std::span<const uint8_t> buffer) {
     int packet_id = 0;
     try {
       packet_id = reader.read_varint();
-    } catch (const std::exception &e) {
+    } catch (const std::exception& e) {
       logger::error("Failed to read packet ID: {}", e.what());
       disconnect_after_writing = true;
       break;
@@ -59,7 +59,7 @@ int MinecraftClient::handle_packets(std::span<const uint8_t> buffer) {
   return bytes_consumed;
 }
 
-void MinecraftClient::handle_packet_data(int packet_id, ByteReader &reader) {
+void MinecraftClient::handle_packet_data(int packet_id, ByteReader& reader) {
   switch (state) {
   case State::Handshaking:
     handshaking_handler(packet_id, reader);
@@ -76,7 +76,7 @@ void MinecraftClient::handle_packet_data(int packet_id, ByteReader &reader) {
   }
 }
 
-void MinecraftClient::handshaking_handler(int packet_id, ByteReader &reader) {
+void MinecraftClient::handshaking_handler(int packet_id, ByteReader& reader) {
   switch (packet_id) {
   case 0x00:
     handle_intention(reader);
@@ -84,7 +84,7 @@ void MinecraftClient::handshaking_handler(int packet_id, ByteReader &reader) {
   }
 }
 
-void MinecraftClient::status_handler(int packet_id, ByteReader &reader) {
+void MinecraftClient::status_handler(int packet_id, ByteReader& reader) {
   switch (packet_id) {
   case 0x00:
     handle_status_request();
@@ -95,7 +95,7 @@ void MinecraftClient::status_handler(int packet_id, ByteReader &reader) {
   }
 }
 
-void MinecraftClient::login_handler(int packet_id, ByteReader &reader) {
+void MinecraftClient::login_handler(int packet_id, ByteReader& reader) {
   switch (packet_id) {
   case 0x00:
     handle_login_start(reader);
@@ -103,14 +103,14 @@ void MinecraftClient::login_handler(int packet_id, ByteReader &reader) {
   }
 }
 
-void MinecraftClient::play_handler(int packet_id, ByteReader &reader) {
+void MinecraftClient::play_handler(int packet_id, ByteReader& reader) {
   switch (packet_id) {
   case 0x00:
     break;
   }
 }
 
-void MinecraftClient::handle_intention(ByteReader &reader) {
+void MinecraftClient::handle_intention(ByteReader& reader) {
   Intention packet = Intention::read(reader);
   logger::debug("Protocol version: {} Server address: {} Port: {}", packet.protocol_version, packet.server_address, packet.server_port);
 
@@ -137,7 +137,7 @@ void MinecraftClient::handle_status_request() {
   send_packet(response_packet);
 }
 
-void MinecraftClient::handle_ping_request(ByteReader &reader) {
+void MinecraftClient::handle_ping_request(ByteReader& reader) {
   PingRequest packet = PingRequest::read(reader);
 
   PingResponse response_packet = {.timestamp = packet.timestamp};
@@ -151,8 +151,7 @@ void MinecraftClient::handle_login_start(ByteReader& reader) {
 
   state = State::Play;
 
-  LoginSuccess response_packet = {.uuid = "83c70999-f2fa-499c-bb16-ba839c6910bd",
-                                  .username = packet.username};
+  LoginSuccess response_packet = {.uuid = "83c70999-f2fa-499c-bb16-ba839c6910bd", .username = packet.username};
 
   send_packet(response_packet);
 

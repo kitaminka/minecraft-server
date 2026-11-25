@@ -8,7 +8,7 @@
 #include "log/logger.hpp"
 #include "network/tcp_connection.hpp"
 
-TcpConnection::TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager)
+TcpConnection::TcpConnection(int fd, sockaddr_in address, IConnectionManager& manager)
     : ufd(UniqueFd(fd)), address(address), manager(manager) {}
 
 // Returns whether client is disconnected or not

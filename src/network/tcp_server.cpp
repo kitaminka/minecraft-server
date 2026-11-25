@@ -10,7 +10,7 @@
 #include "network/tcp_connection.hpp"
 #include "network/tcp_server.hpp"
 
-TcpServer::TcpServer(Epoll &epoll, int port) : port(port), epoll(epoll) {}
+TcpServer::TcpServer(Epoll& epoll, int port) : port(port), epoll(epoll) {}
 
 TcpServer::~TcpServer() { stop(); }
 
@@ -43,7 +43,7 @@ void TcpServer::initialize_socket() {
   server_address.sin_addr.s_addr = INADDR_ANY;
   server_address.sin_port = htons(port);
   socklen_t server_addr_len = sizeof(server_address);
-  if (bind(socket_ufd.get_fd(), reinterpret_cast<sockaddr *>(&server_address), server_addr_len) < 0) {
+  if (bind(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&server_address), server_addr_len) < 0) {
     throw std::system_error(errno, std::generic_category(), "bind failed");
   }
   if (listen(socket_ufd.get_fd(), LISTEN_QUEUE_SIZE) < 0) {
@@ -56,7 +56,7 @@ void TcpServer::accept_connections() {
   while (accepting) {
     sockaddr_in conn_addr;
     socklen_t conn_addr_len = sizeof(conn_addr);
-    int conn_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr *>(&conn_addr), &conn_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    int conn_fd = accept4(socket_ufd.get_fd(), reinterpret_cast<sockaddr*>(&conn_addr), &conn_addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
 
     if (conn_fd < 0) {
       accepting = false;
@@ -64,7 +64,7 @@ void TcpServer::accept_connections() {
       connections[conn_fd] = std::make_unique<TcpConnection>(conn_fd, conn_addr, *this);
 
       // TODO: add error handling
-      TcpConnection *conn = connections[conn_fd].get();
+      TcpConnection* conn = connections[conn_fd].get();
       epoll.add(conn->ufd.get_fd(), conn);
 
       logger::info("Added connection: {}", conn->ufd.get_fd());

@@ -14,7 +14,7 @@ struct Intention {
   uint16_t server_port;
   Intent intent;
 
-  static Intention read(ByteReader &reader) {
+  static Intention read(ByteReader& reader) {
     return {.protocol_version = reader.read_varint(),
             .server_address = reader.read_string(MAX_SERVER_ADDRESS_LENGTH),
             .server_port = reader.read_unsigned_short(),

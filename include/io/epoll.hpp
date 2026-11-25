@@ -11,11 +11,11 @@ class Epoll {
 public:
   Epoll();
 
-  void add(int fd, IEpollHandler *handler);
+  void add(int fd, IEpollHandler* handler);
   void remove(int fd);
 
-  void enable_writing_flag(int fd, IEpollHandler *handler);
-  void disable_writing_flag(int fd, IEpollHandler *handler);
+  void enable_writing_flag(int fd, IEpollHandler* handler);
+  void disable_writing_flag(int fd, IEpollHandler* handler);
 
   void start_loop();
   void stop_loop();
@@ -32,7 +32,7 @@ private:
 
   int wait();
 
-  void modify(int fd, IEpollHandler *handler, int operation, uint32_t events);
+  void modify(int fd, IEpollHandler* handler, int operation, uint32_t events);
 
   std::function<void()> post_process_callback;
 

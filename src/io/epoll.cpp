@@ -13,15 +13,15 @@ Epoll::Epoll() : epoll_ufd(UniqueFd(epoll_create1(EPOLL_CLOEXEC))) {
   }
 }
 
-void Epoll::add(int fd, IEpollHandler *handler) { modify(fd, handler, EPOLL_CTL_ADD, EPOLLIN); }
+void Epoll::add(int fd, IEpollHandler* handler) { modify(fd, handler, EPOLL_CTL_ADD, EPOLLIN); }
 
-void Epoll::enable_writing_flag(int fd, IEpollHandler *handler) { modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN | EPOLLOUT); }
+void Epoll::enable_writing_flag(int fd, IEpollHandler* handler) { modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN | EPOLLOUT); }
 
-void Epoll::disable_writing_flag(int fd, IEpollHandler *handler) { modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN); }
+void Epoll::disable_writing_flag(int fd, IEpollHandler* handler) { modify(fd, handler, EPOLL_CTL_MOD, EPOLLIN); }
 
 void Epoll::remove(int fd) { modify(fd, nullptr, EPOLL_CTL_DEL, 0); }
 
-void Epoll::modify(int fd, IEpollHandler *handler, int op, uint32_t events) {
+void Epoll::modify(int fd, IEpollHandler* handler, int op, uint32_t events) {
   std::string op_s;
   switch (op) {
   case EPOLL_CTL_ADD:
@@ -69,7 +69,7 @@ void Epoll::start_loop() {
       for (int i = 0; i < event_count; i++) {
         epoll_event event = events[i];
 
-        auto handler = static_cast<IEpollHandler *>(event.data.ptr);
+        auto handler = static_cast<IEpollHandler*>(event.data.ptr);
 
         if (event.events & EPOLLIN) {
           handler->on_read();

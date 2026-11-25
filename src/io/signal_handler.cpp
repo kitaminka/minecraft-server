@@ -9,7 +9,7 @@
 #include "io/unique_fd.hpp"
 #include "log/logger.hpp"
 
-SignalHandler::SignalHandler(Epoll &epoll) : epoll(epoll) {
+SignalHandler::SignalHandler(Epoll& epoll) : epoll(epoll) {
   sigset_t sigmask;
   sigemptyset(&sigmask);
   sigaddset(&sigmask, SIGINT);

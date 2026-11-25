@@ -5,11 +5,11 @@ public:
   UniqueFd();
   explicit UniqueFd(int fd);
 
-  UniqueFd(const UniqueFd &) = delete;
-  UniqueFd &operator=(const UniqueFd &) = delete;
+  UniqueFd(const UniqueFd&) = delete;
+  UniqueFd& operator=(const UniqueFd&) = delete;
 
-  UniqueFd(UniqueFd &&other) noexcept;
-  UniqueFd &operator=(UniqueFd &&other) noexcept;
+  UniqueFd(UniqueFd&& other) noexcept;
+  UniqueFd& operator=(UniqueFd&& other) noexcept;
 
   ~UniqueFd();
 
