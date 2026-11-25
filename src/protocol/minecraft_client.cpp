@@ -6,6 +6,8 @@
 #include "protocol/byte_reader.hpp"
 #include "protocol/minecraft_client.hpp"
 #include "protocol/packets/handshaking_packets.hpp"
+#include "protocol/packets/login_packets.hpp"
+#include "protocol/packets/play_packets.hpp"
 #include "protocol/packets/status_packets.hpp"
 
 int MinecraftClient::handle_packets(std::span<const uint8_t> buffer) {
@@ -66,8 +68,10 @@ void MinecraftClient::handle_packet_data(int packet_id, ByteReader &reader) {
     status_handler(packet_id, reader);
     break;
   case State::Login:
+    login_handler(packet_id, reader);
     break;
   case State::Play:
+    play_handler(packet_id, reader);
     break;
   }
 }
@@ -87,6 +91,21 @@ void MinecraftClient::status_handler(int packet_id, ByteReader &reader) {
     break;
   case 0x01:
     handle_ping_request(reader);
+    break;
+  }
+}
+
+void MinecraftClient::login_handler(int packet_id, ByteReader &reader) {
+  switch (packet_id) {
+  case 0x00:
+    handle_login_start(reader);
+    break;
+  }
+}
+
+void MinecraftClient::play_handler(int packet_id, ByteReader &reader) {
+  switch (packet_id) {
+  case 0x00:
     break;
   }
 }
@@ -125,6 +144,21 @@ void MinecraftClient::handle_ping_request(ByteReader &reader) {
 
   send_packet(response_packet);
   disconnect_after_writing = true;
+}
+
+void MinecraftClient::handle_login_start(ByteReader& reader) {
+  LoginStart packet = LoginStart::read(reader);
+
+  state = State::Play;
+
+  LoginSuccess response_packet = {.uuid = "83c70999-f2fa-499c-bb16-ba839c6910bd",
+                                  .username = packet.username};
+
+  send_packet(response_packet);
+
+  JoinGame join_packet;
+
+  send_packet(join_packet);
 }
 
 std::span<const uint8_t> MinecraftClient::get_outgoing() { return outgoing; }

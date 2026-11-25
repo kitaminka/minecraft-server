@@ -12,6 +12,8 @@ public:
 
   void write_varint(int value);
   void write_byte(uint8_t value);
+  void write_int(int32_t value);
+  void write_bool(bool value);
   void write_string(std::string_view value);
   void write_long(int64_t value);
 

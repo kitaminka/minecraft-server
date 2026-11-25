@@ -26,6 +26,17 @@ void ByteWriter::write_long(int64_t value) {
   }
 }
 
+void ByteWriter::write_int(int32_t value) {
+  auto uvalue = static_cast<uint32_t>(value);
+  for (int i = 24; i >= 0; i -= 8) {
+    write_byte((uvalue >> i) & 0xFF);
+  }
+}
+
+void ByteWriter::write_bool(bool value) {
+  write_byte(value);
+}
+
 int ByteWriter::get_varint_size(int value) {
   if (value == 0)
     return 1;
