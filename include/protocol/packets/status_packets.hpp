@@ -12,11 +12,7 @@ struct StatusRequest {
 struct PingRequest {
   int64_t timestamp;
 
-  static PingRequest read(ByteReader& reader) {
-    return {
-      .timestamp = reader.read_long()
-    };
-  }
+  static PingRequest read(ByteReader &reader) { return {.timestamp = reader.read_long()}; }
 };
 
 struct StatusResponse {
@@ -24,9 +20,7 @@ struct StatusResponse {
 
   std::string json_status;
 
-  void write(ByteWriter& writer) const {
-    writer.write_string(json_status);
-  }
+  void write(ByteWriter &writer) const { writer.write_string(json_status); }
 };
 
 struct PingResponse {
@@ -34,7 +28,5 @@ struct PingResponse {
 
   int64_t timestamp;
 
-  void write(ByteWriter& writer) const {
-    writer.write_long(timestamp);
-  }
+  void write(ByteWriter &writer) const { writer.write_long(timestamp); }
 };

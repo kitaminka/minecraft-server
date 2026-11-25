@@ -4,36 +4,37 @@
 #include <functional>
 #include <sys/epoll.h>
 
-#include "io/unique_fd.hpp"
 #include "io/epoll_handler.hpp"
+#include "io/unique_fd.hpp"
 
 class Epoll {
-  public:
-    Epoll();
+public:
+  Epoll();
 
-    void add(int fd, IEpollHandler *handler);
-    void remove(int fd);
+  void add(int fd, IEpollHandler *handler);
+  void remove(int fd);
 
-    void enable_writing_flag(int fd, IEpollHandler *handler);
-    void disable_writing_flag(int fd, IEpollHandler *handler);
+  void enable_writing_flag(int fd, IEpollHandler *handler);
+  void disable_writing_flag(int fd, IEpollHandler *handler);
 
-    void start_loop();
-    void stop_loop();
+  void start_loop();
+  void stop_loop();
 
-    void set_post_process_callback(std::function<void()> callback);
-  private:
-    static constexpr int MAX_EVENTS = 32;
-    static constexpr int TIMEOUT = -1;
+  void set_post_process_callback(std::function<void()> callback);
 
-    UniqueFd epoll_ufd;
+private:
+  static constexpr int MAX_EVENTS = 32;
+  static constexpr int TIMEOUT = -1;
 
-    epoll_event events[MAX_EVENTS];
+  UniqueFd epoll_ufd;
 
-    int wait();
+  epoll_event events[MAX_EVENTS];
 
-    void modify(int fd, IEpollHandler *handler, int operation, uint32_t events);
+  int wait();
 
-    std::function<void()> post_process_callback;
+  void modify(int fd, IEpollHandler *handler, int operation, uint32_t events);
 
-    bool loop_running{false};
+  std::function<void()> post_process_callback;
+
+  bool loop_running{false};
 };

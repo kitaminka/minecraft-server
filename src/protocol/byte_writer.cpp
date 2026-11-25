@@ -2,7 +2,7 @@
 #include <bit>
 #include <cstdint>
 
-ByteWriter::ByteWriter(std::vector<uint8_t>& buffer) : buffer(buffer) {}
+ByteWriter::ByteWriter(std::vector<uint8_t> &buffer) : buffer(buffer) {}
 
 void ByteWriter::write_varint(int value) {
   while ((value & ~0x7F) != 0) {
@@ -12,9 +12,7 @@ void ByteWriter::write_varint(int value) {
   write_byte(value);
 }
 
-void ByteWriter::write_byte(uint8_t value) {
-  buffer.push_back(value);
-}
+void ByteWriter::write_byte(uint8_t value) { buffer.push_back(value); }
 
 void ByteWriter::write_string(std::string_view value) {
   write_varint(value.size());
@@ -29,7 +27,8 @@ void ByteWriter::write_long(int64_t value) {
 }
 
 int ByteWriter::get_varint_size(int value) {
-  if (value == 0) return 1;
+  if (value == 0)
+    return 1;
   int bits = 32 - std::countl_zero(static_cast<uint32_t>(value));
   return (bits + 6) / 7;
 }

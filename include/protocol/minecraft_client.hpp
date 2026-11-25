@@ -6,48 +6,43 @@
 #include <span>
 #include <vector>
 
-enum class State {
-  Handshaking,
-  Status,
-  Login,
-  Play
-};
+enum class State { Handshaking, Status, Login, Play };
 
 class MinecraftClient {
-  public:
-    int handle_packets(std::span<const uint8_t> buffer);
+public:
+  int handle_packets(std::span<const uint8_t> buffer);
 
-    std::span<const uint8_t> get_outgoing();
+  std::span<const uint8_t> get_outgoing();
 
-    void clear_outgoing();
+  void clear_outgoing();
 
-    bool disconnect_after_writing{false};
-  private:
-    State state{State::Handshaking};
+  bool disconnect_after_writing{false};
 
-    std::vector<uint8_t> outgoing;
+private:
+  State state{State::Handshaking};
 
-    int handle_packet(ByteReader& reader);
-    void handle_packet_data(int packet_id, ByteReader& reader);
+  std::vector<uint8_t> outgoing;
 
-    void handshaking_handler(int packet_id, ByteReader& reader);
-    void status_handler(int packet_id, ByteReader& reader);
+  int handle_packet(ByteReader &reader);
+  void handle_packet_data(int packet_id, ByteReader &reader);
 
-    void handle_intention(ByteReader& reader);
-    void handle_status_request();
-    void handle_ping_request(ByteReader& reader);
+  void handshaking_handler(int packet_id, ByteReader &reader);
+  void status_handler(int packet_id, ByteReader &reader);
 
-    template<typename ClientBoundPacket>
-    void send_packet(const ClientBoundPacket& packet) {
-      std::vector<uint8_t> payload;
-      ByteWriter payload_writer(payload);
-      packet.write(payload_writer);
+  void handle_intention(ByteReader &reader);
+  void handle_status_request();
+  void handle_ping_request(ByteReader &reader);
 
-      int id_size = ByteWriter::get_varint_size(packet.ID);
+  template <typename ClientBoundPacket> void send_packet(const ClientBoundPacket &packet) {
+    std::vector<uint8_t> payload;
+    ByteWriter payload_writer(payload);
+    packet.write(payload_writer);
 
-      ByteWriter writer(outgoing);
-      writer.write_varint(payload.size() + id_size);
-      writer.write_varint(packet.ID);
-      outgoing.insert(outgoing.end(), payload.begin(), payload.end());
-    }
+    int id_size = ByteWriter::get_varint_size(packet.ID);
+
+    ByteWriter writer(outgoing);
+    writer.write_varint(payload.size() + id_size);
+    writer.write_varint(packet.ID);
+    outgoing.insert(outgoing.end(), payload.begin(), payload.end());
+  }
 };

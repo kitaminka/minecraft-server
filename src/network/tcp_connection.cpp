@@ -1,14 +1,15 @@
+#include <cerrno>
 #include <cstdint>
 #include <span>
 #include <sys/types.h>
 #include <unistd.h>
-#include <cerrno>
 
-#include "network/tcp_connection.hpp"
 #include "io/unique_fd.hpp"
 #include "log/logger.hpp"
+#include "network/tcp_connection.hpp"
 
-TcpConnection::TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager) : ufd(UniqueFd(fd)), address(address), manager(manager) {}
+TcpConnection::TcpConnection(int fd, sockaddr_in address, IConnectionManager &manager)
+    : ufd(UniqueFd(fd)), address(address), manager(manager) {}
 
 // Returns whether client is disconnected or not
 bool TcpConnection::read_incoming() {
@@ -117,10 +118,6 @@ void TcpConnection::send_outgoing() {
   }
 }
 
-ssize_t TcpConnection::write_bytes(std::span<const uint8_t> buffer) {
-  return write(ufd.get_fd(), buffer.data(), buffer.size());
-}
+ssize_t TcpConnection::write_bytes(std::span<const uint8_t> buffer) { return write(ufd.get_fd(), buffer.data(), buffer.size()); }
 
-void TcpConnection::disconnect() {
-  manager.disconnect(ufd.get_fd());
-}
+void TcpConnection::disconnect() { manager.disconnect(ufd.get_fd()); }

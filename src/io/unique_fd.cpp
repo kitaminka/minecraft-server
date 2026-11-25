@@ -7,19 +7,13 @@ UniqueFd::UniqueFd() : fd(-1) {}
 
 UniqueFd::UniqueFd(int fd) : fd(fd) {}
 
-UniqueFd::~UniqueFd() {
-  reset();
-}
+UniqueFd::~UniqueFd() { reset(); }
 
-int UniqueFd::get_fd() const {
-  return fd;
-}
+int UniqueFd::get_fd() const { return fd; }
 
-bool UniqueFd::is_active() const {
-  return fd != -1;
-}
+bool UniqueFd::is_active() const { return fd != -1; }
 
-UniqueFd& UniqueFd::operator=(UniqueFd&& other) noexcept{
+UniqueFd &UniqueFd::operator=(UniqueFd &&other) noexcept {
   if (this != &other) {
     if (is_active()) {
       close(fd);
@@ -30,9 +24,7 @@ UniqueFd& UniqueFd::operator=(UniqueFd&& other) noexcept{
   return *this;
 }
 
-UniqueFd::UniqueFd(UniqueFd&& other) noexcept : fd(other.fd) {
-  other.fd = -1;
-}
+UniqueFd::UniqueFd(UniqueFd &&other) noexcept : fd(other.fd) { other.fd = -1; }
 
 void UniqueFd::reset() {
   if (is_active()) {

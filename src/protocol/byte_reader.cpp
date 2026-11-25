@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <stdexcept>
 
-#include "protocol/byte_reader.hpp"
 #include "log/logger.hpp"
+#include "protocol/byte_reader.hpp"
 
 ByteReader::ByteReader(std::span<const uint8_t> buffer) : buffer(buffer) {}
 
@@ -59,14 +59,8 @@ int64_t ByteReader::read_long() {
   return static_cast<int64_t>(res);
 }
 
-size_t ByteReader::remaining() {
-  return buffer.size() - size_t(cursor_pos);
-}
+size_t ByteReader::remaining() { return buffer.size() - size_t(cursor_pos); }
 
-int ByteReader::get_pos() {
-  return cursor_pos;
-}
+int ByteReader::get_pos() { return cursor_pos; }
 
-void ByteReader::skip(size_t count) {
-  cursor_pos += count;
-}
+void ByteReader::skip(size_t count) { cursor_pos += count; }
